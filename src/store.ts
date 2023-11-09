@@ -117,7 +117,7 @@ export class Store<T extends object> {
 		try {
 			record = await promise;
 			records.set(keyStr, record);
-			log.Debug("loaded record {id}", keyStr); // TODO: id
+			log.Debug("loaded record {id}", record.id);
 			return record;
 		} catch (err) {
 			log.Error("failed to load record: {err}", err);
