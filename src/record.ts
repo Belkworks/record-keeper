@@ -20,16 +20,16 @@ export class Record<T extends object> {
 	}
 
 	save(now?: boolean) {
-		this.store.save(this, now);
+		return this.store.save(this, now);
 	}
 
 	unseal() {
 		this.targetState = RecordState.Unsealed;
-		this.store.unseal(this);
+		return this.store.unseal(this);
 	}
 
 	seal() {
 		this.targetState = RecordState.Sealed;
-		this.store.seal(this);
+		return this.store.seal(this);
 	}
 }
