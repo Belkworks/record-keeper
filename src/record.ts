@@ -8,7 +8,7 @@ export enum RecordState {
 export class Record<T extends object> {
 	readonly id: string;
 
-	targetState = RecordState.Unsealed;
+	targetState = RecordState.Sealed;
 
 	data?: T;
 
@@ -16,7 +16,7 @@ export class Record<T extends object> {
 		readonly key: string,
 		private readonly store: Store<T>,
 	) {
-		this.id = `${store}/${key}`;
+		this.id = `${store.id}/${key}`;
 	}
 
 	save(now?: boolean) {
