@@ -204,23 +204,27 @@ export class Store<T extends object> {
 			LOCK_EXPIRY_SECONDS,
 		);
 
-		if (newValue === newOwner) this.locks.add(key);
-		else {
+		if (newValue !== newOwner) {
 			this.locks.delete(key);
 			throw `conflicting lock: ${newValue}`;
 		}
+
+		this.locks.add(key);
+		log.Verbose("wrote session lock on {id}/{key}", this.id, key);
 	}
 
 	private async releaseLock(key: string) {
 		if (!this.locks.delete(key)) return;
 
-		this.memory.UpdateAsync(
+		const newValue = this.memory.UpdateAsync(
 			key,
 			(oldValue) => {
 				if (getOwner(oldValue) === this.guid) return UNSET;
 			},
 			LOCK_EXPIRY_SECONDS,
 		);
+
+		if (newValue === UNSET) log.Verbose("released session lock on {id}/{key}", this.id, key);
 	}
 
 	private write(record: Record<T>, now?: boolean) {
