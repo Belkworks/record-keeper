@@ -236,8 +236,9 @@ export class Store<T extends object> {
 				this.store.SetAsync(record.key, record.data);
 				log.Debug("wrote to record {id}", record.id);
 				if (record.targetState !== RecordState.Unsealed) this.releaseLock(record.key);
-			} finally {
+			} catch (err) {
 				if (hadPendingWrite) this.pendingWrite.add(record.key);
+				throw err;
 			}
 		};
 
