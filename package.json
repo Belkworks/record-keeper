@@ -1,6 +1,6 @@
 {
 	"name": "@belkworks/record-keeper",
-	"version": "0.1.4",
+	"version": "0.1.5",
 	"main": "out/init.lua",
 	"scripts": {
 		"build": "rbxtsc",
