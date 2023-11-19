@@ -24,12 +24,10 @@ export class Record<T extends object> {
 	}
 
 	unseal() {
-		this.targetState = RecordState.Unsealed;
 		return this.store.unseal(this);
 	}
 
 	seal() {
-		this.targetState = RecordState.Sealed;
 		return this.store.seal(this);
 	}
 }

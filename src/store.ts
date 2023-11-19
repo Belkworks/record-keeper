@@ -138,12 +138,14 @@ export class Store<T extends object> {
 	}
 
 	async unseal(record: Record<T>) {
+		record.targetState = RecordState.Unsealed;
 		return this.writeLock(record.key);
 	}
 
-	seal({ key }: Record<T>) {
-		if (this.pendingWrite.has(key)) return false;
-		return this.releaseLock(key);
+	seal(record: Record<T>) {
+		record.targetState = RecordState.Sealed;
+		if (this.pendingWrite.has(record.key)) return false;
+		return this.releaseLock(record.key);
 	}
 
 	// Internal methods
@@ -199,7 +201,7 @@ export class Store<T extends object> {
 			(oldValue) => {
 				const oldOwner = getOwner(oldValue);
 				if (oldOwner === undefined || oldOwner === guid) return newOwner;
-				return oldValue;
+				return undefined;
 			},
 			LOCK_EXPIRY_SECONDS,
 		);
@@ -220,6 +222,7 @@ export class Store<T extends object> {
 			key,
 			(oldValue) => {
 				if (getOwner(oldValue) === this.guid) return UNSET;
+				return undefined;
 			},
 			LOCK_EXPIRY_SECONDS,
 		);
