@@ -1,0 +1,29 @@
+{
+	"name": "record-keeper [TEST]",
+	"globIgnorePaths": ["node_modules/*/package.json"],
+	"tree": {
+		"$className": "DataModel",
+		"ReplicatedStorage": {
+			"record-keeper": {
+				"$path": "out/src"
+			},
+			"include": {
+				"$path": "include",
+				"node_modules": {
+					"$className": "Folder",
+					"@rbxts": {
+						"$path": "node_modules/@rbxts"
+					},
+					"@belkworks": {
+						"$path": "node_modules/@belkworks"
+					}
+				}
+			}
+		},
+		"ServerScriptService": {
+			"test": {
+				"$path": "out/test"
+			}
+		}
+	}
+}

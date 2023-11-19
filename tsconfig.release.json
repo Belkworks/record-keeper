@@ -18,10 +18,11 @@
 		"typeRoots": ["node_modules/@rbxts", "node_modules/@belkworks"],
 
 		// configurable
-		"rootDirs": ["src", "test"],
+		"rootDir": "src",
 		"outDir": "out",
 		"incremental": true,
 		"tsBuildInfoFile": "out/tsconfig.tsbuildinfo",
 		"declaration": true
-	}
+	},
+	"exclude": ["test"]
 }

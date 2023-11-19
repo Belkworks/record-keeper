@@ -1,2 +1,2 @@
-export { Store } from "./store";
+export { Store } from "./classes/Store";
 export { log } from "./log";
