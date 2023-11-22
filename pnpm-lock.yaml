@@ -8,6 +8,9 @@ dependencies:
   '@belkworks/promise-queue':
     specifier: ^0.1.3
     version: 0.1.3
+  '@rbxts/beacon':
+    specifier: ^2.1.1
+    version: 2.1.1
   '@rbxts/log':
     specifier: ^0.6.3
     version: 0.6.3
@@ -150,6 +153,10 @@ packages:
       picocolors: 1.0.0
       tslib: 2.6.2
     dev: true
+
+  /@rbxts/beacon@2.1.1:
+    resolution: {integrity: sha512-QeFMSGj+Iijp+tHcV9eyqVyeKZ/9zp7GqRJ/hecKiHmoTu4yFcyGnUQAaX7OdQKBCgLvWMJ9wK/FXMECjFA2Kg==}
+    dev: false
 
   /@rbxts/compiler-types@2.1.0-types.1:
     resolution: {integrity: sha512-+ztwutzuNivWsgsERiC7n5il4C5gfJUuGJUmXYRq8FwY4ye3aupRi9RocmyAHq6255sO7z+RM61AVbqx3llsLQ==}

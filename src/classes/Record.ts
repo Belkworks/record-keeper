@@ -1,9 +1,22 @@
-import { Producer } from "@rbxts/reflex";
+import { Producer, ProducerActions } from "@rbxts/reflex";
+import { ThrottledDataStore } from "./ThrottledDataStore";
 
-export class Record<State, Actions> {
-	readonly producer: Producer<State, Actions>;
+export class Record<State, Actions extends ProducerActions<State>> {
+	private pulled = false;
 
-	constructor(producer: Producer<State, Actions>) {
-		this.producer = producer;
+	constructor(
+		readonly key: string,
+		private readonly store: ThrottledDataStore,
+		readonly producer: Producer<State, Actions>,
+	) {}
+
+	async pull() {
+		const value = await this.store.read(this.key);
+		if (value !== undefined) this.producer.setState(value as State);
+
+		if (this.pulled) return;
+		this.pulled = true;
+
+		// TODO: setup change listener
 	}
 }

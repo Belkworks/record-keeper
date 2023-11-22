@@ -1,98 +1,68 @@
 import { ProducerActions, createProducer } from "@rbxts/reflex";
-import { Key, keyToString } from "../util/key";
 import { Record } from "./Record";
-import { ReadonlyRecord } from "./ReadonlyRecord";
-import { PromiseCache } from "../util/promise-cache";
-import { cloneDeep } from "../util/cloneDeep";
+import { ThrottledDataStore } from "./ThrottledDataStore";
 
-const DataStoreService = game.GetService("DataStoreService");
-
-type StoreIdentifier = string | { name: string; scope: string };
-
-type StoreOptions<State, Actions extends ProducerActions<State>> = {
-	initialState: State;
+type StoreOptions<State, Actions> = {
+	name: string | { name: string; scope: string };
+	initialValue: State;
 	actions: Actions;
-	store: StoreIdentifier;
 };
 
-const getStore = (store: StoreIdentifier) => {
-	let name, scope;
+type Key = string | number | Player;
 
-	if (!typeIs(store, "table")) name = store;
-	else {
-		name = store.name;
-		scope = store.scope;
-	}
+const keyToString = (key: Key) => {
+	if (typeIs(key, "string")) return key;
+	else if (typeIs(key, "number")) return tostring(key);
+	else if (typeIs(key, "Instance") && key.IsA("Player")) return tostring(key.UserId);
 
-	return DataStoreService.GetDataStore(name, scope);
+	throw `unsupported key ${key} (${typeOf(key)})`;
 };
 
 export class Store<State, Actions extends ProducerActions<State>> {
+	private readonly records = new Map<string, Promise<Record<State, Actions>>>();
+
 	private readonly initialState: State;
 
 	private readonly actions: Actions;
 
-	private readonly store: DataStore;
-
-	private readonly records = new Map<string, Record<State, Actions>>();
-
-	private readonly readonlyRecords = new Map<string, ReadonlyRecord<State>>();
-
-	private readonly openRecord = PromiseCache<Record<State, Actions>>();
-
-	private readonly openReadonlyRecord = PromiseCache<ReadonlyRecord<State>>();
+	private readonly store: ThrottledDataStore;
 
 	constructor(options: StoreOptions<State, Actions>) {
-		this.initialState = options.initialState;
+		this.initialState = options.initialValue;
 		this.actions = options.actions;
 
-		this.store = getStore(options.store);
-	}
-
-	async close(key: Key) {
-		const strKey = keyToString(key);
-
-		let record;
-
-		try {
-			record = await (this.records.get(strKey) ?? this.openRecord.get(strKey));
-			if (!record) return;
-		} catch {
-			return;
+		let name, scope;
+		if (!typeIs(options.name, "table")) name = options.name;
+		else {
+			name = options.name.name;
+			scope = options.name.scope;
 		}
 
-		this.records.delete(strKey);
+		this.store = new ThrottledDataStore(name, scope);
+	}
 
-		// TODO: close it
+	private async loadRecord(key: string) {
+		const producer = createProducer(this.initialState, this.actions);
+		const record = new Record(key, this.store, producer);
+		await record.pull();
+		return record;
 	}
 
 	async open(key: Key) {
 		const strKey = keyToString(key);
-		const record = this.records.get(strKey);
-		if (record) return record;
 
-		return this.openRecord.run(strKey, async () => {
-			// TODO: get state
-			const producer = createProducer(cloneDeep(this.initialState), this.actions);
-			const record = new Record(producer);
+		let promise = this.records.get(strKey);
+		if (promise) return promise;
+
+		promise = this.loadRecord(strKey);
+
+		this.records.set(strKey, promise);
+
+		try {
+			const record = await promise;
 			return record;
-		});
-	}
-
-	find(key: Key) {
-		return this.records.get(keyToString(key));
-	}
-
-	async view(key: Key) {
-		const strKey = keyToString(key);
-		const loaded = this.readonlyRecords.get(strKey);
-		if (loaded) return loaded;
-
-		return this.openReadonlyRecord.run(strKey, async () => {
-			// TODO: get state
-			const record = new ReadonlyRecord({} as State);
-			this.readonlyRecords.set(strKey, record);
-			return record;
-		});
+		} catch {
+			this.records.delete(strKey);
+		}
 	}
 }
